@@ -131,10 +131,20 @@ window.closeTimeModal = function() {
 window.submitTimeOverride = async function() {
     const target = document.getElementById('override-target').value;
     const type = document.getElementById('override-type').value;
+    const dayOffset = document.getElementById('override-day').value;
     const timeVal = document.getElementById('override-time').value;
     const masterKey = window.SMASH_ADMIN_KEY;
 
-    if (!timeVal) { alert("시간을 설정해주세요."); return; }
+    if (!masterKey) {
+        alert("보안 인증 만료\n다시 로그인 후 시도해주세요.");
+        location.reload();
+        return;
+    }
+
+    if (!timeVal) {
+        alert("시간을 설정해주세요.");
+        return;
+    }
 
     const overrideKey = `${target}_${type}`;
 
@@ -142,11 +152,16 @@ window.submitTimeOverride = async function() {
         const res = await fetch('/api/admin/override', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ masterKey, key: overrideKey, value: timeVal })
+            body: JSON.stringify({
+                masterKey,
+                key: overrideKey,
+                day: dayOffset,
+                time: timeVal
+            })
         });
         const result = await res.json();
         if (result.success) {
-            alert(`✅ 변경 완료!\n[${overrideKey}] -> ${timeVal.replace('T', ' ')}`);
+            alert(`✅ 변경 완료!\n[${overrideKey}] -> ${timeVal}`);
             location.reload();
         } else {
             alert("❌ 실패: " + result.message);
