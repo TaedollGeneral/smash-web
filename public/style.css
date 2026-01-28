@@ -95,24 +95,103 @@ body {
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th { background: #f8f9fa; position: sticky; top: 0; padding: 8px; border-bottom: 2px solid #ddd; font-size: 13px; z-index: 10; }
 td { padding: 8px; border-bottom: 1px solid #eee; text-align: center; }
+
+/* 번갈아가며 줄 명암 주기 (가독성 향상) */
+tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+tbody tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+
 th:first-child, td:first-child { width: 40px; background: #f1f1f1; font-weight: bold; }
 
 /* 5. 하단 컨트롤 패널 */
 .control-panel {
-    background: #333; color: white; padding: 10px 15px; border-radius: 10px;
-    display: flex; justify-content: space-between; align-items: center;
-    flex-shrink: 0; flex-wrap: wrap; gap: 10px;
+    background: #333;
+    color: white;
+    padding: 10px 14px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 10px;
     padding-bottom: calc(10px + env(safe-area-inset-bottom));
 }
-.input-group { display: flex; gap: 8px; align-items: center; }
-input[type="text"], input[type="password"] { padding: 6px; width: 80px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px; }
-select { padding: 6px; border-radius: 4px; }
-.radio-label { font-size: 14px; margin-right: 5px; cursor: pointer; }
-.submit-btn { background: #007bff; color: white; border: none; padding: 6px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
 
-/* 톱니바퀴 (원래대로 투명하게 복구) */
-.admin-btn { background: none; border: none; padding: 5px 10px; font-size: 20px; cursor: pointer; transition: transform 0.2s; color: white; }
-.admin-btn:hover { transform: rotate(90deg); }
+/* 상단 인풋 줄 */
+.input-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* 모바일에서 두 번째 줄(라디오 + 게스트 + 버튼들)이 자연스럽게 우측 정렬되도록 */
+.input-group.mobile-row-2 {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+input[type="text"],
+input[type="password"] {
+    padding: 6px 8px;
+    width: 80px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 13px;
+}
+
+select {
+    padding: 6px 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 13px;
+}
+
+.radio-label {
+    font-size: 13px;
+    margin-right: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.submit-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.submit-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* 톱니바퀴 버튼: 너무 크지 않게, 클릭 영역은 확보 */
+.admin-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.5);
+    padding: 4px 8px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 6px;
+    color: white;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.admin-btn:hover {
+    background-color: rgba(255,255,255,0.12);
+    transform: rotate(15deg);
+}
 
 /* 6. 모달 & 팝업 */
 .admin-layer {
@@ -137,12 +216,94 @@ select { padding: 6px; border-radius: 4px; }
 /* 7. 관리자 패널 (원래 박스 디자인) */
 #admin-dashboard-panel {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 90%; max-width: 350px;
-    background: white; padding: 20px; border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 10000;
-    display: flex; flex-direction: column;
+    width: 90%;
+    max-width: 360px;
+    background: #ffffff;
+    padding: 18px 18px 16px 18px;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
-.admin-header { display: flex; justify-content: space-between; align-items: center; }
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+/* 대시보드 본문 섹션 공통 스타일 (index.html 구조 기반) */
+.admin-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.admin-section {
+    padding: 10px 0;
+    border-top: 1px solid #f1f1f1;
+}
+
+.admin-section:first-of-type {
+    border-top: none;
+}
+
+.section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #444;
+    margin: 0 0 8px 0;
+}
+
+.control-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.modern-input,
+.modern-select {
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 13px;
+}
+
+.center-text {
+    text-align: center;
+}
+
+.modern-btn {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.btn-secondary {
+    background-color: #f3f4f6;
+    color: #111;
+}
+
+.btn-outline-danger {
+    background-color: #fff;
+    color: #dc3545;
+    border: 1px solid #dc3545;
+}
+
+.full-width {
+    width: 100%;
+}
 
 /* 시간 수정 모달 우선순위 보정 */
 #admin-time-modal { z-index: 20000 !important; }

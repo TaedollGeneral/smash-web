@@ -3,34 +3,28 @@ name: Deploy to AWS
 on:
   push:
     branches:
-      - main  # main 브랜치에 코드가 올라오면 실행해라
+      - main  # 만약 브랜치가 master라면 master로 수정하세요!
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: 1. 깃허브 코드 가져오기
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: 2. AWS로 파일 전송 (SCP)
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: 22
-          source: "."
-          target: "/home/ubuntu/smash" # ★ 네 AWS 프로젝트 폴더 경로!
-          rm: false
-
-      - name: 3. 서버 업데이트 및 재시작 (SSH)
+      - name: Deploy to AWS EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            cd /home/ubuntu/smash
-            npm install
-            pm2 restart server.js || pm2 start server.js --name "smash"
+            # 프로젝트 폴더로 이동 (폴더명 smash가 맞는지 꼭 확인!)
+            cd smash
+            
+            # 최신 코드 당겨오기
+            git fetch --all
+            git reset --hard origin/main
+            
+            pm2 restart all
