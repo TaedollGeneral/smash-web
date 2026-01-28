@@ -106,49 +106,53 @@ tbody tr:nth-child(even) {
 
 th:first-child, td:first-child { width: 40px; background: #f1f1f1; font-weight: bold; }
 
-/* 5. 하단 컨트롤 패널 */
+/* 5. 하단 컨트롤 패널 - 가벼운 카드형, 버튼은 항상 우측 정렬 */
 .control-panel {
-    background: #333;
-    color: white;
+    background: #ffffff;
+    color: #111827;
     padding: 10px 14px;
     border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.06);
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
     padding-bottom: calc(10px + env(safe-area-inset-bottom));
 }
 
-/* 상단 인풋 줄 */
+/* 왼쪽 입력 영역 (ID / PWD / 카테고리) */
 .input-group {
     display: flex;
-    gap: 8px;
     align-items: center;
+    gap: 6px;
 }
 
-/* 모바일에서 두 번째 줄(라디오 + 게스트 + 버튼들)이 자연스럽게 우측 정렬되도록 */
+/* 두 번째 줄: 좌측(라디오/게스트), 우측(설정+확인 버튼) */
 .input-group.mobile-row-2 {
     flex: 1;
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
     gap: 8px;
 }
 
 input[type="text"],
 input[type="password"] {
     padding: 6px 8px;
-    width: 80px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
+    width: 82px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
     font-size: 13px;
 }
 
 select {
     padding: 6px 8px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
     font-size: 13px;
 }
 
@@ -166,30 +170,34 @@ select {
 }
 
 .submit-btn {
-    background: #007bff;
+    background: #2563eb;
     color: white;
     border: none;
     padding: 6px 16px;
-    border-radius: 6px;
+    border-radius: 999px;
     font-weight: 700;
     font-size: 13px;
     cursor: pointer;
 }
 
-/* 톱니바퀴 버튼: 너무 크지 않게, 클릭 영역은 확보 */
+/* 설정(톱니바퀴) 버튼 - 우측 아이콘 버튼 */
 .admin-btn {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.5);
-    padding: 4px 8px;
-    font-size: 18px;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    padding: 5px 9px;
+    font-size: 16px;
     cursor: pointer;
-    border-radius: 6px;
-    color: white;
-    transition: background-color 0.15s ease, transform 0.15s ease;
+    border-radius: 999px;
+    color: #4b5563;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
 }
 
 .admin-btn:hover {
-    background-color: rgba(255,255,255,0.12);
+    background-color: #e5e7eb;
+    border-color: #9ca3af;
     transform: rotate(15deg);
 }
 
