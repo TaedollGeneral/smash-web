@@ -139,6 +139,17 @@ function formatTime(ms) {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
+// 1분 미만 남았을 때: 소수 둘째 자리까지 표시 (예: 00:00:12.34)
+function formatTimeWithMs(ms) {
+    if (ms <= 0) return "00:00:00.00";
+    const totalSec = ms / 1000;
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const secFloat = totalSec % 60; // 0 ~ 59.999...
+    const secStr = secFloat.toFixed(2).padStart(5, '0'); // "12.34" 형태
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${secStr}`;
+}
+
 function selectDay(day, btnElement) {
     currentDay = day;
     document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
@@ -180,7 +191,8 @@ function renderSingleTimer(element, data) {
     let diff = target - now;
     if (diff < 0) diff = 0;
 
-    const timeStr = formatTime(diff);
+    // 1분 미만일 때는 밀리초 포함 표시
+    const timeStr = diff < 60000 ? formatTimeWithMs(diff) : formatTime(diff);
     
     let labelText = "";
     let colorClass = "text-gray"; 

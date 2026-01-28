@@ -108,7 +108,7 @@ th:first-child, td:first-child { width: 40px; background: #f1f1f1; font-weight: 
 
 /* 5. 하단 컨트롤 패널 - 가벼운 카드형, 버튼은 항상 우측 정렬 */
 .control-panel {
-    background: #ffffff;
+    background: linear-gradient(135deg, #e0f2fe, #ede9fe);
     color: #111827;
     padding: 10px 14px;
     border-radius: 10px;
