@@ -1,12 +1,12 @@
 /**
  * [FILE: routes/api.js]
- * 역할: 프론트엔드와 서버의 소통 창구 (TimeManager 적용 완료)
+ * 역할: 프론트엔드와 서버의 API 엔드포인트
  */
 
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
-const TimeManager = require('../utils/TimeManager'); // [핵심] TimeManager 연결
+const TimeManager = require('../utils/TimeManager');
 
 // ============================================================
 // [SECTION 1] 일반 사용자 기능 (신청/취소/조회)
@@ -16,21 +16,17 @@ const TimeManager = require('../utils/TimeManager'); // [핵심] TimeManager 연
 router.post('/apply', async (req, res) => {
     const { id, pwd, category, name, day } = req.body;
 
-    // 1-1. 마스터키 확인 (비번이 마스터키면 프리패스)
     const isMaster = TimeManager.checkMasterKey(pwd);
     let applicantName = "관리자(대리)";
 
     if (!isMaster) {
-        // 1-2. [TimeManager] 신청 가능 시간인지 검증
+        // 시간 검증
         const timeCheck = TimeManager.validateApplyTime(day, category);
         if (!timeCheck.valid) {
             return res.json({ success: false, message: timeCheck.msg });
         }
 
-        // 1-3. 본인 확인 (DB 조회 - 기존 로직 유지)
-        // (validator.js가 사라졌으므로 checkUserAuth 로직을 여기로 가져오거나 별도 유틸로 분리해야 하지만,
-        //  편의상 여기에 직접 DB 조회를 구현하거나, 기존 validator의 checkUserAuth만 따로 살려두는 방법이 있음.
-        //  여기서는 '본인 확인' 로직을 간단하게 인라인으로 구현합니다.)
+        // 본인 확인
         try {
             const user = await checkUserAuth(id, pwd);
             if (!user.valid) return res.json({ success: false, message: user.msg });
@@ -40,10 +36,12 @@ router.post('/apply', async (req, res) => {
         }
     }
 
-    // 1-4. 중복 검사 및 저장
+    // 중복 검사 및 저장
     const dupSql = `SELECT * FROM applications WHERE student_id = ? AND day = ? AND category = ?`;
     db.query(dupSql, [id, day, category], (err, rows) => {
-        if (rows.length > 0) return res.json({ success: false, message: "이미 신청 내역이 있습니다." });
+        if (rows && rows.length > 0) {
+            return res.json({ success: false, message: "이미 신청 내역이 있습니다." });
+        }
 
         const insertSql = `INSERT INTO applications (student_id, day, category, guest_name) VALUES (?, ?, ?, ?)`;
         db.query(insertSql, [id, day, category, name], (err) => {
@@ -59,11 +57,13 @@ router.post('/cancel', async (req, res) => {
     const isMaster = TimeManager.checkMasterKey(pwd);
 
     if (!isMaster) {
-        // 2-1. [TimeManager] 취소 가능 시간인지 검증
+        // 시간 검증
         const timeCheck = TimeManager.validateCancelTime(day, category);
-        if (!timeCheck.valid) return res.json({ success: false, message: timeCheck.msg });
+        if (!timeCheck.valid) {
+            return res.json({ success: false, message: timeCheck.msg });
+        }
 
-        // 2-2. 본인 확인
+        // 본인 확인
         try {
             const user = await checkUserAuth(id, pwd);
             if (!user.valid) return res.json({ success: false, message: user.msg });
@@ -72,7 +72,7 @@ router.post('/cancel', async (req, res) => {
         }
     }
 
-    // 2-3. 삭제
+    // 삭제
     const deleteSql = `DELETE FROM applications WHERE student_id = ? AND category = ? AND day = ?`;
     db.query(deleteSql, [id, category, day], (err, result) => {
         if (err) return res.status(500).json({ success: false, message: 'DB 에러' });
@@ -81,9 +81,8 @@ router.post('/cancel', async (req, res) => {
     });
 });
 
-// 3. 현황 조회 (기존 유지)
+// 3. 현황 조회
 router.get('/status', (req, res) => {
-// 🔥 [긴급 추가] "절대 캐시하지 마!" 헤더 설정
     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
@@ -102,38 +101,34 @@ router.get('/status', (req, res) => {
     });
 });
 
-
 // ============================================================
-// [SECTION 2] 프론트엔드 UI 지원 API (신규 추가!)
+// [SECTION 2] 프론트엔드 UI 지원 API
 // ============================================================
 
-// 4. [NEW] 타이머 정보 제공 (5개 카테고리 상태 한 번에)
-// 프론트엔드는 이 정보를 받아 화면에 그리기만 하면 됨
+// 4. 타이머 정보
 router.get('/timer', (req, res) => {
     const status = TimeManager.getAllTimerStatus();
     res.json(status);
 });
 
-// 5. [NEW] 명단 제목 텍스트 제공 (복사용)
-// 예: "1/21 수요일 정기운동"
+// 5. 명단 제목 텍스트
 router.get('/title-text', (req, res) => {
     const day = req.query.day || 'WED';
     const text = TimeManager.getTitleText(day);
     res.json({ text });
 });
 
-// 6. [NEW] 현재 시스템 정보 (주차 등)
+// 6. 시스템 정보
 router.get('/info', (req, res) => {
     const info = TimeManager.getSystemInfo();
     res.json(info);
 });
 
-
 // ============================================================
 // [SECTION 3] 관리자 전용 API
 // ============================================================
 
-// 7. 관리자 인증 확인
+// 7. 관리자 인증
 router.post('/admin/verify', (req, res) => {
     const { masterKey } = req.body;
     if (TimeManager.checkMasterKey(masterKey)) {
@@ -143,24 +138,52 @@ router.post('/admin/verify', (req, res) => {
     }
 });
 
-
-// 8. [수정] 학기 및 주차 설정
+// 8. 학기/주차 설정
 router.post('/admin/semester', (req, res) => {
-    const { masterKey, semester, week } = req.body; // [NEW] week 추가
-    
+    const { masterKey, semester, week } = req.body;
+
     if (!TimeManager.checkMasterKey(masterKey)) {
         return res.json({ success: false, message: "관리자 권한이 없습니다." });
     }
 
-    if (!semester || !week) return res.json({ success: false, message: "정보가 부족합니다." });
+    if (!semester || !week) {
+        return res.json({ success: false, message: "정보가 부족합니다." });
+    }
 
-    // TimeManager에게 (학기, 주차) 전달
-    TimeManager.resetSemester(semester, parseInt(week));
+    TimeManager.setSemester(semester, parseInt(week));
     res.json({ success: true, message: `${semester}학기 ${week}주차로 설정되었습니다.` });
 });
 
+// 9. 시간 오버라이드 설정
+router.post('/admin/override', (req, res) => {
+    const { masterKey, key, seconds } = req.body;
+
+    if (!TimeManager.checkMasterKey(masterKey)) {
+        return res.json({ success: false, message: "권한 없음" });
+    }
+
+    if (!key || seconds === undefined) {
+        return res.json({ success: false, message: "정보가 부족합니다." });
+    }
+
+    TimeManager.setOverride(key, parseInt(seconds));
+    res.json({ success: true, message: `${key} = ${seconds}초로 설정되었습니다.` });
+});
+
+// 10. 모든 오버라이드 초기화
+router.post('/admin/override/reset', (req, res) => {
+    const { masterKey } = req.body;
+
+    if (!TimeManager.checkMasterKey(masterKey)) {
+        return res.json({ success: false, message: "권한 없음" });
+    }
+
+    TimeManager.resetOverrides();
+    res.json({ success: true });
+});
+
 // ============================================================
-// [Helper] 본인 확인 함수 (DB 조회) - 내부 사용
+// [Helper] 본인 확인 함수
 // ============================================================
 function checkUserAuth(id, pwd) {
     return new Promise((resolve, reject) => {
@@ -172,33 +195,5 @@ function checkUserAuth(id, pwd) {
         });
     });
 }
-
-// 9. [수정] 특정 시간 강제 변경 (검증 로직 포함)
-router.post('/admin/override', (req, res) => {
-    const { masterKey, key, day, time } = req.body;
-    
-    if (!TimeManager.checkMasterKey(masterKey)) {
-        return res.json({ success: false, message: "권한 없음" });
-    }
-    
-    try {
-        // 성공 시 아무것도 리턴 안 함, 실패 시 throw Error
-        TimeManager.updateOverride(key, parseInt(day), time);
-        res.json({ success: true });
-    } catch (err) {
-        // TimeManager가 검증 실패 시 던진 에러 메시지를 그대로 전달
-        res.json({ success: false, message: err.message });
-    }
-});
-
-// 10. [NEW] 모든 오버라이드 초기화
-router.post('/admin/override/reset', (req, res) => {
-    const { masterKey } = req.body;
-    if (!TimeManager.checkMasterKey(masterKey)) return res.json({ success: false, message: "권한 없음" });
-
-    TimeManager.resetOverrides();
-    TimeManager.saveConfig();
-    res.json({ success: true });
-});
 
 module.exports = router;

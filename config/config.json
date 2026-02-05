@@ -1,24 +1,24 @@
 {
   "system": {
-    "year": 2026,
     "semester": "겨울",
-    "week": 2
+    "week": 5
   },
-  "overrides": {
-    "WED_EXERCISE_OPEN": null,
-    "WED_EXERCISE_CLOSE": null,
-    "WED_EXERCISE_CANCEL": null, 
-    "WED_GUEST_OPEN": null,
-    "WED_GUEST_CLOSE": null,
-    "WED_GUEST_CANCEL": null,
-    "WED_LESSON_OPEN": null,
-    "WED_LESSON_CLOSE": null,
-    "WED_LESSON_CANCEL": null,
-    "FRI_EXERCISE_OPEN": null,
-    "FRI_EXERCISE_CLOSE": null,
-    "FRI_EXERCISE_CANCEL": null,
-    "FRI_GUEST_OPEN": null,
-    "FRI_GUEST_CLOSE": null,
-    "FRI_GUEST_CANCEL": null
-  }
+  "rules": {
+    "WED_EXERCISE_OPEN": 79200,
+    "WED_EXERCISE_CLOSE": 165600,
+    "WED_EXERCISE_CANCEL": 345600,
+    "WED_GUEST_OPEN": 79200,
+    "WED_GUEST_CLOSE": 410400,
+    "WED_GUEST_CANCEL": 432000,
+    "WED_LESSON_OPEN": 79200,
+    "WED_LESSON_CLOSE": 165600,
+    "WED_LESSON_CANCEL": 345600,
+    "FRI_EXERCISE_OPEN": 79200,
+    "FRI_EXERCISE_CLOSE": 165600,
+    "FRI_EXERCISE_CANCEL": 518400,
+    "FRI_GUEST_OPEN": 79200,
+    "FRI_GUEST_CLOSE": 579600,
+    "FRI_GUEST_CANCEL": 604800
+  },
+  "overrides": {}
 }
