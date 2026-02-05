@@ -12,6 +12,17 @@ const path = require('path');                  // 파일 및 폴더 경로 조�
 const { startScheduler } = require('./utils/scheduler'); // 매주 월요일 초기화 및 백업을 담당하는 스케줄러 로드
 const apiRoutes = require('./routes/api');    // 신청, 취소, 현황 등 실제 API 비즈니스 로직이 담긴 라우터 로드
 
+const rateLimit = require('express-rate-limit');
+
+// Rate Limiting 설정 (1분에 10회 제한)
+const apiLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 10,
+    message: { success: false, message: '요청이 너무 많습니다. 1분 후 다시 시도하세요.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
 // ---------------------------------------------------------
 // 2. 서버 설정 및 기본 변수 선언
 // ---------------------------------------------------------
@@ -42,6 +53,9 @@ app.use(express.urlencoded({ extended: true }));
 // ---------------------------------------------------------
 // 4. API 경로(라우터) 연결
 // ---------------------------------------------------------
+// 신청/취소 API에 Rate Limiting 적용
+app.use('/api/apply', apiLimiter);
+app.use('/api/cancel', apiLimiter);
 // "/api"로 시작하는 모든 요청(예: /api/apply)은 'apiRoutes' 파일에서 처리하도록 위임함
 app.use('/api', apiRoutes);
 

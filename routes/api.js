@@ -8,6 +8,19 @@ const router = express.Router();
 const db = require('../config/db');
 const TimeManager = require('../utils/TimeManager');
 
+// 요청 간격 제한용 (학번별 마지막 요청 시간)
+const lastRequestTime = {};
+const MIN_REQUEST_INTERVAL = 1000; // 1초
+
+function checkRequestInterval(id) {
+    const now = Date.now();
+    if (lastRequestTime[id] && (now - lastRequestTime[id]) < MIN_REQUEST_INTERVAL) {
+        return false;
+    }
+    lastRequestTime[id] = now;
+    return true;
+}
+
 // ============================================================
 // [SECTION 1] 일반 사용자 기능 (신청/취소/조회)
 // ============================================================
@@ -16,7 +29,11 @@ const TimeManager = require('../utils/TimeManager');
 router.post('/apply', async (req, res) => {
     const { id, pwd, category, name, day } = req.body;
 
+     // 요청 간격 체크 (마스터키 제외)
     const isMaster = TimeManager.checkMasterKey(pwd);
+    if (!isMaster && !checkRequestInterval(id)) {
+        return res.json({ success: false, message: '너무 빠른 요청입니다. 1초 후 다시 시도하세요.' });
+    }
     let applicantName = "관리자(대리)";
 
     if (!isMaster) {
@@ -54,8 +71,12 @@ router.post('/apply', async (req, res) => {
 // 2. 취소하기
 router.post('/cancel', async (req, res) => {
     const { id, pwd, category, day } = req.body;
+    // 요청 간격 체크 (마스터키 제외)
     const isMaster = TimeManager.checkMasterKey(pwd);
-
+    if (!isMaster && !checkRequestInterval(id)) {
+        return res.json({ success: false, message: '너무 빠른 요청입니다. 1초 후 다시 시도하세요.' });
+    }
+    
     if (!isMaster) {
         // 시간 검증
         const timeCheck = TimeManager.validateCancelTime(day, category);
