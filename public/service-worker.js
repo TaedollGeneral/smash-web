@@ -1,4 +1,4 @@
-const CACHE_NAME = 'uos-smash-v20260124-EMERGENCY-V2';
+const CACHE_NAME = 'uos-smash-v20260205-V1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
